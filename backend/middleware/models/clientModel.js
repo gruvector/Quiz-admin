@@ -7,7 +7,6 @@ const clientSchema = new mongoose.Schema({
   age: { type: String, required: true },
   rating: { type: String, required: false, default: "0%" },
   apply: { type: Boolean, required: true },
-  updateStatus: { type: Array, required: true },
   resetToken: { type: String, required: false },
 });
 

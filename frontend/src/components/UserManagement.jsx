@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { styled } from "@mui/material/styles";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -26,6 +26,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import InputAdornment from "@mui/material/InputAdornment";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
+import TaskContext from "../context/TaskContext";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -91,6 +92,8 @@ const vertical = "bottom";
 const horizontal = "center";
 
 const UserManagement = () => {
+  const { tasks } = useContext(TaskContext);
+
   const [people, setPeople] = useState([]);
   const [checked, setChecked] = useState(null);
   const [open, setOpen] = useState(false);
@@ -221,6 +224,10 @@ const UserManagement = () => {
     setChecked(null);
   }, [checked]);
 
+  const percent = (allRate) => {
+    return allRate ? ((allRate / tasks.length) * 100).toFixed(2) : "0";
+  };
+
   return (
     <div className="flex flex-col px-10 mt-10">
       <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -328,7 +335,7 @@ const UserManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center justify-center">
-                        <div className="ml-4">{person.rating}</div>
+                        <div className="ml-4">{percent(person.rating)}%</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">

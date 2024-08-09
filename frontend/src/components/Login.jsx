@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import axios from "../Axios/axios.js";
 import TokenContext from "../context/TokenContext.js";
 function Login() {
@@ -12,7 +12,7 @@ function Login() {
       const result = await axios.post("/user/login", formData);
       tokenDispatch({ type: "SET_TOKEN", payload: result.data.token });
       userDispatch({ type: "SET_USER", payload: result.data.user });
-      localStorage.setItem("authToken", JSON.stringify(result.data.token));
+      localStorage.setItem("adminToken", JSON.stringify(result.data.token));
     } catch (error) {
       console.log(error);
       setError({ message: error.response.data.message });
@@ -25,7 +25,7 @@ function Login() {
   };
   return (
     <div>
-      {userToken && <Navigate to="/" />}
+      {userToken && <Navigate to="/admin" />}
       <section className="login-container">
         <div className="px-6 h-full text-gray-800">
           <div className="flex xl:justify-center lg:justify-between justify-center items-center flex-wrap h-full g-6">
@@ -81,7 +81,6 @@ function Login() {
                       Remember me
                     </label>
                   </div>
-                  {/* <Link to={"/forgotPassword"}>Forgot Password</Link> */}
                 </div>
                 <div className="text-center lg:text-left">
                   <button
@@ -91,15 +90,6 @@ function Login() {
                   >
                     Login
                   </button>
-                  {/* <p className="text-sm font-semibold mt-2 pt-1 mb-0">
-                    Don't have an account?
-                    <Link
-                      to={"/register"}
-                      className="text-red-600 hover:text-red-700 focus:text-red-700 transition duration-200 ease-in-out"
-                    >
-                      Register
-                    </Link>
-                  </p> */}
                 </div>
               </form>
             </div>

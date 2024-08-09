@@ -118,26 +118,6 @@ const setApply = async (req, res) => {
   }
 };
 
-const setRate = async (req, res) => {
-  const { id, allRate } = req.body;
-
-  try {
-    const client = await clientModel.findOneAndUpdate(
-      { _id: id },
-      { $set: { rating: allRate } },
-      { new: true }
-    );
-
-    if (client) {
-      res.status(200).json(client);
-    } else {
-      res.status(404).json({ message: "Client not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 const deleteClient = async (req, res) => {
   const { id } = req.body;
 
@@ -154,77 +134,58 @@ const deleteClient = async (req, res) => {
   }
 };
 
-const editClient = async (req, res) => {
+const editClient = async(req, res) => {
   const { name, email, age } = req.body;
-  if (req.body.password) {
-    const { password } = req.body;
+  if(req.body.password) {
+    const {password} = req.body;
     if (!validator.isEmail(email)) {
       return res.status(400).json({ message: "Please enter a valid email" });
-    }
+    };
     if (!validator.isStrongPassword(password)) {
       return res
         .status(400)
         .json({ message: "Please enter a strong password" });
-    }
+    };
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    clientModel
-      .findByIdAndUpdate(
-        req.params.id,
-        {
-          name,
-          email,
-          password: hashedPassword,
-          age,
-        },
-        { new: true }
-      )
-      .then((user) => {
-        if (!user) {
-          return res.status(404).send("User not found");
-        }
-        res.send(user);
-      })
-      .catch((err) => {
-        res.status(500).send("Server error");
-      });
+    clientModel.findByIdAndUpdate(req.params.id, { 
+        name,
+        email,
+        password: hashedPassword,
+        age 
+      }, { new: true })
+        .then(user => {
+           if (!user) {
+             return res.status(404).send('User not found');
+           }
+           res.send(user);
+        })
+        .catch(err => {
+          res.status(500).send('Server error');
+        });
   }
   if (!validator.isEmail(email)) {
     return res.status(400).json({ message: "Please enter a valid email" });
   }
-  clientModel
-    .findByIdAndUpdate(
-      req.params.id,
-      {
-        name,
-        email,
-        age,
-      },
-      { new: true }
-    )
-    .then((user) => {
+  clientModel.findByIdAndUpdate(req.params.id, { 
+    name,
+    email,
+    age 
+  }, { new: true })
+    .then(user => {
       if (!user) {
-        return res.status(404).send("User not found");
+         return res.status(404).send('User not found');
       }
       res.send(user);
     })
-    .catch((err) => {
-      res.status(500).send("Server error");
+    .catch(err => {
+      res.status(500).send('Server error');
     });
-};
+}
 
 function getRandomInt(min, max) {
   min = Math.ceil(min); // Ensure the minimum is rounded up to the nearest whole number
   max = Math.floor(max); // Ensure the maximum is rounded down to the nearest whole number
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
-export {
-  loginClient,
-  registerClient,
-  getAllClient,
-  setApply,
-  deleteClient,
-  getClient,
-  editClient,
-  setRate,
-};
+export { loginClient, registerClient, getAllClient, setApply, deleteClient, getClient, editClient };

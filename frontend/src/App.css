@@ -42,7 +42,7 @@ task-container {
 .outlet {
   height: 90vh;
   background-color: whitesmoke;
-  border-radius: 10px;
+  border-radius: 20px;
   padding: 1rem;
   overflow: auto;
 }

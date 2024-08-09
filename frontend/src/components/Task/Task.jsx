@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
-import moment from "moment";
 import "./task.css";
 import { useContext } from "react";
-import TaskContext from "../../context/TaskContext";
 import TokenContext from "../../context/TokenContext";
-import EditIcon from "@mui/icons-material/Edit";
 import Snackbar from "@mui/material/Snackbar";
 import axios from "../../Axios/axios.js";
 import Dialog from "@mui/material/Dialog";
@@ -20,12 +17,10 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 
 function Task({ task, id }) {
-  const { dispatch } = useContext(TaskContext);
   const { userToken } = useContext(TokenContext);
   const [categories, setCategories] = useState([]);
   const [subCategory, setSubCategory] = useState("");
   const [subHeading, setSubHeading] = useState("");
-  const [addCategory, setAddCategory] = useState("");
   const [question, setQuestion] = useState("");
   const [answerA, setAnswerA] = useState("");
   const [answerB, setAnswerB] = useState("");

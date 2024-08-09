@@ -6,23 +6,29 @@ import Layout from "./components/Layout";
 import TaskContext from "./context/TaskContext";
 import TokenContext from "./context/TokenContext";
 import CategoryContext from "./context/CategoryContext";
+import TaskIDContext from "./context/TaskIDContext";
+import taskIDReducer from "./reducer/taskIDReducer";
 import categoryReducer from "./reducer/categoryReducer";
 import taskReducer from "./reducer/taskReducer";
 import tokenReducer from "./reducer/tokenReducer";
 import userReducer from "./reducer/userReducer";
 import Header from "./components/Header/Header";
 import Login from "./components/Login";
-import Register from "./components/Register";
-import ForgotPassword from "./components/forgotPassword/ForgotPassword";
-import ResetPassword from "./components/forgotPassword/ResetPassword";
+import UserLogin from "./components/UserLogin.jsx";
 import axios from "./Axios/axios.js";
 import UserManagement from "./components/UserManagement.jsx";
+import UserLayout from "./components/UserLayout.jsx";
+import UserTask from "./components/UserTask.jsx";
+import UserAnalyze from "./components/UserAnalyze.jsx";
 function App() {
-  const token = JSON.parse(localStorage.getItem("authToken"));
+  const adminToken = JSON.parse(localStorage.getItem("adminToken"));
+  const usersToken = JSON.parse(localStorage.getItem("userToken"));
+  const token = adminToken ? adminToken : usersToken;
   const [tasks, dispatch] = useReducer(taskReducer, []);
   const [userToken, tokenDispatch] = useReducer(tokenReducer, token);
   const [user, userDispatch] = useReducer(userReducer, {});
   const [category, categoryDispatch] = useReducer(categoryReducer, "");
+  const [taskId, taskIDDispatch] = useReducer(taskIDReducer, "");
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -31,7 +37,8 @@ function App() {
             Authorization: `Bearer ${userToken}`,
           },
         });
-        //tokenDispatch({type: "SET_TOKEN", payload: res.token})
+
+        tokenDispatch({ type: "SET_TOKEN", payload: res.token });
         userDispatch({ type: "SET_USER", payload: res.data.user });
       } catch (error) {
         console.log(error);
@@ -51,6 +58,7 @@ function App() {
         });
         dispatch({ type: "SET_TASK", payload: res.data });
         categoryDispatch({ type: "SET_CATEGORY", payload: "" });
+        taskIDDispatch({ type: "SET_TASKID", payload: "" });
       } catch (error) {
         console.log("App.js error", error);
       }
@@ -63,25 +71,43 @@ function App() {
   return (
     <BrowserRouter>
       <TokenContext.Provider
-        value={{ userToken, tokenDispatch, user, userDispatch }}
+        value={{
+          userToken,
+          tokenDispatch,
+          user,
+          userDispatch,
+        }}
       >
         <TaskContext.Provider value={{ tasks, dispatch }}>
           <CategoryContext.Provider value={{ category, categoryDispatch }}>
-            <Routes>
-              <Route path="/" element={<Header />}>
-                <Route path="/" element={token ? <Layout /> : <Login />}>
-                  <Route index element={<AllTask />} />
+            <TaskIDContext.Provider value={{ taskId, taskIDDispatch }}>
+              <Routes>
+                <Route path="/" element={<Header />}>
+                  <Route
+                    path="/"
+                    element={usersToken ? <UserLayout /> : <UserLogin />}
+                  >
+                    <Route index element={<UserTask />} />
+                  </Route>
+                  <Route
+                    path="/admin"
+                    element={adminToken ? <Layout /> : <Login />}
+                  >
+                    <Route index element={<AllTask />} />
+                  </Route>
+                  <Route
+                    path="/manageUser"
+                    element={adminToken ? <UserManagement /> : <Login />}
+                  />
+                  <Route
+                    path="/useranalyze"
+                    element={usersToken ? <UserAnalyze /> : <UserLogin />}
+                  />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/userlogin" element={<UserLogin />} />
                 </Route>
-                <Route
-                  path="/manageUser"
-                  element={token ? <UserManagement /> : <Login />}
-                />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgotPassword" element={<ForgotPassword />} />
-                <Route path="/resetPassword" element={<ResetPassword />} />
-              </Route>
-            </Routes>
+              </Routes>
+            </TaskIDContext.Provider>
           </CategoryContext.Provider>
         </TaskContext.Provider>
       </TokenContext.Provider>
