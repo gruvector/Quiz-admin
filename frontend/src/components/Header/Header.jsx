@@ -29,7 +29,7 @@ function Header() {
           {adminToken ? (
             <NavLink to="/manageUser">Users</NavLink>
           ) : usersToken ? (
-            <NavLink to="/useranalyze">Analyze</NavLink>
+            <NavLink to="/useranalyze"></NavLink>
           ) : (
             ""
           )}
@@ -39,7 +39,7 @@ function Header() {
             <div className="flex items-center justify-center">
               <p className="mr-5">
                 welcome,{" "}
-                <span className=" text-xl text-blue-800 capitalize">
+                <span className="text-xl text-blue-800 capitalize">
                   {user ? user.name : clientName}
                 </span>
               </p>

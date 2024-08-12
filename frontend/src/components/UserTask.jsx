@@ -26,7 +26,7 @@ function MaxHeightTextarea(props) {
   };
 
   const Textarea = styled(TextareaAutosize)(
-    ({ theme }) => `
+    () => `
     box-sizing: border-box;
     width: 100%;
     font-family: 'IBM Plex Sans', sans-serif;
@@ -35,7 +35,7 @@ function MaxHeightTextarea(props) {
     line-height: 1.5;
     padding: 15px 15px;
     border-radius: 5px;
-    color: ${theme.palette.mode === "dark" ? grey[300] : grey[900]};
+    color: black;
     background: transparent;
     border: 1px solid rgb(64 64 64);
     margin-bottom: 20px;
@@ -62,7 +62,7 @@ function MaxHeightTextarea(props) {
         className="mt-3"
         minRows={4}
         aria-label="maximum height"
-        placeholder="Question"
+        placeholder="Please Select the Problem in the left side"
         defaultValue={props.value}
         readOnly
       />
@@ -72,7 +72,9 @@ function MaxHeightTextarea(props) {
 
 function AllRateComponent({ allRate, tasks }) {
   const rateDisplay = useMemo(() => {
-    return allRate ? ((allRate / tasks.length) * 100).toFixed(2) : "0";
+    return allRate <= tasks.length && allRate
+      ? ((allRate / (tasks.length - 1)) * 100).toFixed(2)
+      : "0";
   }, [allRate]);
 
   return <div className="text-lg">All Rate: {rateDisplay}%</div>;
@@ -80,13 +82,15 @@ function AllRateComponent({ allRate, tasks }) {
 
 function UserTask() {
   const { taskId, taskIDDispatch } = useContext(TaskIDContext);
-  const { tasks } = useContext(TaskContext);
+  const { tasks, dispatch } = useContext(TaskContext);
   const [task, setTask] = useState();
   const [selectedAnswer, setSelectedAnswer] = useState("");
   const [order, setOrder] = useState([]);
   const [showAnswer, setShowAnswer] = useState("");
   const [currentPercent, setCurrentPercent] = useState([0, 0, 0, 0]);
   const [allRate, setAllRate] = useState(0);
+  const [status, setStatus] = useState("");
+  const clientId = localStorage.getItem("clientId");
 
   useEffect(() => {
     let currentTask = null;
@@ -102,6 +106,10 @@ function UserTask() {
     }
     setTask(currentTask);
     setOrder(relatedTaskIds);
+    const item = currentTask?.updateStatus.find(
+      (item) => item.userid === clientId
+    );
+    setStatus(item?.status);
   }, [taskId, tasks]);
 
   function handleAnswerClick(str) {
@@ -115,17 +123,18 @@ function UserTask() {
       temp[index] = selectedAnswer === task?.correctAnswer ? 1 : 2;
       setCurrentPercent(temp);
       if (selectedAnswer === task?.correctAnswer) {
+        setSelectedAnswer("_");
         setTimeout(async () => {
           await next(task._id);
-        }, 2000);
+        }, 800);
       }
+      setSelectedAnswer("_");
     }
   }, [currentPercent, selectedAnswer, task]);
 
   const next = async (_taskId) => {
     setAllRate(allRate + 1);
     setCurrentPercent([0, 0, 0, 0]);
-    setSelectedAnswer("_");
     const currentIndex = order.indexOf(_taskId);
     if (currentIndex !== -1 && currentIndex < order.length - 1) {
       const nextTask = tasks.find((obj) => obj._id === order[currentIndex + 1]);
@@ -145,117 +154,147 @@ function UserTask() {
     } catch (error) {
       console.error("Error updating apply:", error);
     }
+
+    try {
+      await axios.post("/task/setUpdateStatus", {
+        problemId: _taskId,
+        data: {
+          userid: clientId,
+          status: "Solved",
+          percent: "0%",
+        },
+      });
+    } catch (error) {
+      console.error("Error updating apply:", error);
+    }
+
+    dispatch({
+      type: "UPDATE_UPDATESTATUS",
+      taskId: _taskId,
+      userid: clientId,
+      status: "Solved",
+    });
   };
 
   return (
     <div className="py-4 rounded-lg shadow-md flex items-center justify-center gap-2 m-3 mt-20">
-      <div className="task-info text-slate-900 text-sm w-10/12">
-        <div>
-          <MaxHeightTextarea value={task?.question} />
-        </div>
-        <div className="grid gap-4">
-          <label className="text-lg">Answer</label>
-          <OutlinedInput
-            id="outlined-adornment-amount1"
-            defaultValue="Answer A"
-            value={task?.answerA}
-            startAdornment={<InputAdornment position="start">A</InputAdornment>}
-            readOnly
-            onClick={() => handleAnswerClick("A")}
-          />
-          <OutlinedInput
-            className="w-full"
-            id="outlined-required"
-            defaultValue="Answer B"
-            value={task?.answerB}
-            startAdornment={<InputAdornment position="start">B</InputAdornment>}
-            readOnly
-            onClick={() => handleAnswerClick("B")}
-          />
-          <OutlinedInput
-            className="w-full"
-            id="outlined-required"
-            defaultValue="Answer C"
-            value={task?.answerC}
-            startAdornment={<InputAdornment position="start">C</InputAdornment>}
-            readOnly
-            onClick={() => handleAnswerClick("C")}
-          />
-          {task?.answerD ? (
+      {status === "Solved" ? (
+        <div>Solved</div>
+      ) : (
+        <div className="task-info text-slate-900 text-sm w-10/12">
+          <div>
+            <MaxHeightTextarea value={task?.question} />
+          </div>
+          <div className="grid gap-4 mt-4">
+            <label className="text-lg">Answer</label>
+            <OutlinedInput
+              id="outlined-adornment-amount1"
+              defaultValue="Answer A"
+              value={task?.answerA}
+              startAdornment={
+                <InputAdornment position="start">A</InputAdornment>
+              }
+              readOnly
+              onClick={() => handleAnswerClick("A")}
+            />
             <OutlinedInput
               className="w-full"
               id="outlined-required"
-              defaultValue="Answer D"
-              value={task?.answerD}
+              defaultValue="Answer B"
+              value={task?.answerB}
               startAdornment={
-                <InputAdornment position="start">D</InputAdornment>
+                <InputAdornment position="start">B</InputAdornment>
               }
               readOnly
-              onClick={() => handleAnswerClick("D")}
+              onClick={() => handleAnswerClick("B")}
             />
-          ) : (
-            <div></div>
-          )}
-        </div>
-        <div className="flex justify-between mt-5">
-          <div className="text-lg flex items-center">
-            Selected Answer:&nbsp;&nbsp;&nbsp;
-            <span className="text-4xl text-sky-300"> {selectedAnswer}</span>
+            <OutlinedInput
+              className="w-full"
+              id="outlined-required"
+              defaultValue="Answer C"
+              value={task?.answerC}
+              startAdornment={
+                <InputAdornment position="start">C</InputAdornment>
+              }
+              readOnly
+              onClick={() => handleAnswerClick("C")}
+            />
+            {task?.answerD ? (
+              <OutlinedInput
+                className="w-full"
+                id="outlined-required"
+                defaultValue="Answer D"
+                value={task?.answerD}
+                startAdornment={
+                  <InputAdornment position="start">D</InputAdornment>
+                }
+                readOnly
+                onClick={() => handleAnswerClick("D")}
+              />
+            ) : (
+              <div></div>
+            )}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex justify-between mt-10">
+            <div className="text-lg flex items-center">
+              Selected Answer:&nbsp;&nbsp;&nbsp;
+              <span className="text-4xl text-sky-300"> {selectedAnswer}</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="contained"
+                endIcon={<RemoveRedEyeIcon />}
+                size="large"
+                onMouseDown={() => setShowAnswer(task?.correctAnswer)}
+                onMouseUp={() => setShowAnswer("")}
+              >
+                Preview
+              </Button>
+              <span className="text-4xl text-sky-300">{showAnswer || "_"}</span>
+            </div>
+
             <Button
               variant="contained"
-              endIcon={<RemoveRedEyeIcon />}
+              endIcon={<DoubleArrowIcon />}
               size="large"
-              onMouseDown={() => setShowAnswer(task?.correctAnswer)}
-              onMouseUp={() => setShowAnswer("")}
+              onClick={() => handleSubmit(task)}
+              disabled={selectedAnswer === "_" || "" ? true : false}
             >
-              Preview
+              Confirm
             </Button>
-            <span className="text-4xl text-sky-300">{showAnswer || "_"}</span>
           </div>
 
-          <Button
-            variant="contained"
-            endIcon={<DoubleArrowIcon />}
-            size="large"
-            onClick={() => handleSubmit(task)}
-            disabled={selectedAnswer ? false : true}
-          >
-            Confirm
-          </Button>
-        </div>
-
-        <div className="flex justify-around mt-7">
-          <div className="flex gap-4">
-            {currentPercent.map((val, index) => {
-              if (val === 0) {
-                return (
-                  <div
-                    key={index}
-                    className="w-5 h-5 bg-gray-600 rounded-full"
-                  ></div>
-                );
-              } else if (val === 1) {
-                return (
-                  <div
-                    key={index}
-                    className="w-5 h-5 bg-lime-400 rounded-full"
-                  ></div>
-                );
-              } else if (val === 2) {
-                return (
-                  <div
-                    key={index}
-                    className="w-5 h-5 bg-red-600 rounded-full"
-                  ></div>
-                );
-              }
-            })}
+          <div className="flex justify-around mt-14">
+            <div className="flex gap-4">
+              {currentPercent.map((val, index) => {
+                if (val === 0) {
+                  return (
+                    <div
+                      key={index}
+                      className="w-5 h-5 bg-gray-600 rounded-full"
+                    ></div>
+                  );
+                } else if (val === 1) {
+                  return (
+                    <div
+                      key={index}
+                      className="w-5 h-5 bg-lime-400 rounded-full"
+                    ></div>
+                  );
+                } else if (val === 2) {
+                  return (
+                    <div
+                      key={index}
+                      className="w-5 h-5 bg-red-600 rounded-full"
+                    ></div>
+                  );
+                }
+              })}
+            </div>
+            <AllRateComponent allRate={allRate} tasks={tasks} />
           </div>
-          <AllRateComponent allRate={allRate} tasks={tasks} />
         </div>
-      </div>
+      )}
     </div>
   );
 }

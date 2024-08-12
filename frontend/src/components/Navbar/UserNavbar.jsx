@@ -7,6 +7,7 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Button from "@mui/material/Button";
 
 function UserNavbar() {
   const [categories, setCategories] = useState([]);
@@ -38,9 +39,18 @@ function UserNavbar() {
     setSelectedTaskId(taskId);
   };
 
+  const handleResetStatus = async () => {
+    try {
+      const res = await axios.post("/task/resetUpdateStatus");
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="text-center">
-      <div>
+      <div className="mb-4">
         {categories.length !== 0 ? (
           categories.map((category, index) => {
             return (
@@ -52,7 +62,7 @@ function UserNavbar() {
                 >
                   {category.name}
                 </AccordionSummary>
-                <AccordionDetails>
+                <AccordionDetails className="bg-blue-200">
                   {tasks.length !== 0 ? (
                     tasks.map((task, taskindex) => {
                       if (category.name === task.subCategory) {
@@ -61,7 +71,7 @@ function UserNavbar() {
                             key={taskindex}
                             className={
                               task._id === selectedTaskId
-                                ? "mb-2 font-semibold line-clamp-1 cursor-pointer text-sky-400 text-lg underline decoration-sky-400"
+                                ? "mb-2 font-semibold line-clamp-1 text-lg text-white cursor-pointer border border-white w-9 rounded-full border-4 bg-blue-700 mx-auto"
                                 : "mb-2 font-semibold line-clamp-1 cursor-pointer"
                             }
                             onClick={() => handleTaskClick(task._id)}
@@ -83,6 +93,9 @@ function UserNavbar() {
           <h1>No Category Found</h1>
         )}
       </div>
+      <Button variant="contained" fullWidth onClick={handleResetStatus}>
+        Reset
+      </Button>
     </div>
   );
 }

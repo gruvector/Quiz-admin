@@ -10,7 +10,7 @@ function UserLogin() {
     e.preventDefault();
     try {
       const result = await axios.post("/client/loginClient", formData);
-      await tokenDispatch({ type: "SET_TOKEN", payload: result.data.token });
+      tokenDispatch({ type: "SET_TOKEN", payload: result.data.token });
       localStorage.setItem("userToken", JSON.stringify(result.data.token));
       localStorage.setItem(
         "clientName",
