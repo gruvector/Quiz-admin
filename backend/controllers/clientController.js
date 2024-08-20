@@ -87,7 +87,7 @@ const getAllClient = async (req, res) => {
     res.status(502).json({ message: error.message });
   }
 };
-
+//set Apply
 const setApply = async (req, res) => {
   const { id, apply } = req.body;
 
@@ -107,7 +107,7 @@ const setApply = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
+//delete client
 const deleteClient = async (req, res) => {
   const { id } = req.body;
 
