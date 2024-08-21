@@ -8,7 +8,7 @@ const __dirname = path.dirname("../", __filename);
 const addCategory = (req, res) => {
   const data = req.body;
   const filePath = path.join(__dirname, "public", "categories.json");
-  console.log(data.categories);
+
 
   fs.writeFile(
     filePath,
