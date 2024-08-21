@@ -50,6 +50,7 @@ function App() {
           },
         });
         dispatch({ type: "SET_TASK", payload: res.data });
+        console.log("dispatch");
         categoryDispatch({ type: "SET_CATEGORY", payload: "" });
       } catch (error) {
         console.log("App.js error", error);
